@@ -2,13 +2,13 @@ const express = require ('express');
 
 const app = express();
 
-app.get("/user",(req,res,next)=>{
+app.get("/user",[(req,res,next)=>{
     next();
     res.send("User endpoint");
 },(req,res,next)=>{
     // res.send("User details");
     next();
-},(req,res)=>{
+}],(req,res)=>{
     console.log("This is the third callback");
     res.send("User details from the third callback");
 });
