@@ -2,19 +2,42 @@ const express = require ('express');
 
 const app = express();
 
-//this will only handles /get calls to user 
+
+app.get("/user/:userId/:name",(req,res)=>{
+    const { userId, name } = req.params;
+    console.log(`Fetching user with ID: ${userId} and Name: ${name}`);
+    res.send({firstName: "John", lastName: "Doe", userId, name});
+});
+
+
 app.get("/user",(req,res)=>{
+    const { userId, name } = req.query;
+    console.log(`Fetching user with ID: ${userId} and Name: ${name}`);
+    res.send({firstName: "John", lastName: "Doe", userId, name});
+});
+
+
+app.get(/^\/user\/a(bc)?d$/, (req, res) => {
+    res.send("Matched!");
+});
+
+app.get("/user/ab*c",(req,res)=>{
     res.send({firstName: "John", lastName: "Doe"});
 });
 
-app.post("/user",(req,res)=>{
-    console.log("save data to the database");
-    res.send(`Data saved successfully`);
-}); 
-
-app.delete("/user",(req,res)=>{
-    res.send(`User deleted successfully`);
+app.get("/user/ab*cd",(req,res)=>{
+    res.send({firstName: "John", lastName: "Doe"});
 });
+
+
+app.get(/a/,(req,res)=>{
+    res.send({firstName: "John", lastName: "Doe"});
+});
+
+app.get(/.*fly$/, (req, res) => {
+  res.send('/.*fly$/')
+})
+
 
 // app.use will match all the HTTP method API call to /test 
 app.use("/test",(req,res)=>{
@@ -22,7 +45,7 @@ app.use("/test",(req,res)=>{
 })
 
 app.use("/",(req,res)=>{
-    res.send("Pala for the dashboard");
+    res.send("Palash from the dashboard");
 })
 
 app.listen(3000,()=>{
