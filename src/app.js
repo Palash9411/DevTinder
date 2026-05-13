@@ -3,13 +3,10 @@ const connectDB = require('./configs/database');
 const app = express();
 const User = require('./models/user');
 
+app.use(express.json());
+
 app.post('/signup', async (req, res) => {
-    const newUser = new User({
-        firstName : 'palash',
-        lastName: 'gupta',
-        email: 'palash.gupta@example.com',
-        password: 'password123'
-    });
+    const newUser = new User(req.body);
     try {
         await newUser.save();
         res.send('User created successfully');
