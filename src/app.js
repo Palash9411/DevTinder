@@ -42,6 +42,31 @@ app.get('/feed', async (req, res) => {
     }
 });
 
+app.delete('/user', async (req, res) => {
+    const userId = req.body.userId;
+    try {
+        await User.findOneAndDelete({ _id: userId });
+        res.send('User deleted successfully');
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.patch('/user', async (req, res) => {
+    const userId = req.body.userId;
+    const updates = req.body;
+    try {
+        const updatedUser = await User.findOneAndUpdate({ _id: userId }, updates, {
+            new: true,
+        });
+        res.send(updatedUser);
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 connectDB().then(() => {
     console.log("Database connection established ");
     app.listen(3000, () => {
