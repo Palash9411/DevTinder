@@ -16,6 +16,32 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+// get data of one user 
+
+app.get('/user', async (req, res) => {
+    const email = req.body.email;
+    try{
+        const user = await User.find({ email });
+        if (!user || user.length === 0) {
+            return res.status(404).send('User not found');
+        }
+        res.send(user);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/feed', async (req, res) => {
+    try {
+        const feed = await User.find({});
+        res.send(feed);
+    } catch (error) {
+        console.error("Error fetching feed:", error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 connectDB().then(() => {
     console.log("Database connection established ");
     app.listen(3000, () => {
