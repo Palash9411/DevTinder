@@ -7,12 +7,13 @@ app.use(express.json());
 
 app.post('/signup', async (req, res) => {
     const newUser = new User(req.body);
+    console.log(newUser);
     try {
         await newUser.save();
         res.send('User created successfully');
     } catch (error) {
         console.error("Error creating user:", error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).send(error.message);
     }
 });
 
@@ -59,6 +60,7 @@ app.patch('/user', async (req, res) => {
     try {
         const updatedUser = await User.findOneAndUpdate({ _id: userId }, updates, {
             new: true,
+            runValidators: true
         });
         res.send(updatedUser);
     } catch (error) {
