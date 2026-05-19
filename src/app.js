@@ -54,18 +54,25 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-app.patch('/user', async (req, res) => {
-    const userId = req.body.userId;
+app.patch('/user/:userId', async (req, res) => {
+    const userId = req.params?.userId;
     const updates = req.body;
     try {
+        const ALLOWED_UPDATES = ['firstName', 'lastName', , 'age', 'gender', 'photoUrl', 'about', 'skills'];
+        const isValidUpdate = Object.keys(updates).every(key => ALLOWED_UPDATES.includes(key));
+        if (!isValidUpdate) {
+            throw new Error('Invalid update fields');
+        }
+        if(updates.skills.length > 10) {
+            throw new Error('Too many skills');
+        }
         const updatedUser = await User.findOneAndUpdate({ _id: userId }, updates, {
             new: true,
             runValidators: true
         });
         res.send(updatedUser);
     } catch (error) {
-        console.error("Error updating user:", error);
-        res.status(500).send('Internal Server Error');
+        res.status(400).send(error.message);
     }
 });
 

@@ -1,6 +1,6 @@
 const mongoose= require('mongoose');
 const Schema = mongoose.Schema;
-
+const validator = require('validator');
 
 const userSchema = new Schema({
     firstName : {
@@ -17,11 +17,23 @@ const userSchema = new Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error('Invalid email format');
+            }
+            return true;
+        }
     },
     password: {
         type: String,
         required: true,
+        validate(value) {
+            if (!validator.isStrongPassword(value)) {
+                throw new Error('Weak password , Enter a strong password');
+            }
+            return true;
+        }
     },
     age: {
         type: Number,
@@ -40,7 +52,13 @@ const userSchema = new Schema({
     },
     photoUrl : {
         type: String,
-        default: 'https://ashallendesign.co.uk/blog/13-placeholder-avatar-and-image-websites'
+        default: 'https://ashallendesign.co.uk/blog/13-placeholder-avatar-and-image-websites',
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error('Invalid URL format');
+            }
+            return true;
+        }
     },
     about: {
         type: String,
