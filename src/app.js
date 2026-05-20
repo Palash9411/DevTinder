@@ -4,8 +4,11 @@ const app = express();
 const User = require('./models/user');
 const { validateSignUpData } = require('./utils/validator');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
     try {
@@ -32,9 +35,12 @@ app.post('/login', async (req, res) => {
             return res.status(404).send('Invalid Credentials');
         }
         const isMatch = await bcrypt.compare(password, user.password);
+
         if (!isMatch) {
             return res.status(401).send('Invalid Credentials');
         }
+        const token = jwt.sign({ userId: user._id }, 'DEVELOPMENT$123');
+        res.cookie('token', token);
         res.send('Login successful');
     } catch (error) {
         res.status(500).send(error.message);
@@ -55,6 +61,33 @@ app.get('/user', async (req, res) => {
         console.error("Error fetching user:", error);
         res.status(500).send('Internal Server Error');
     }
+});
+
+app.get('/profile' , async (req, res) => {
+
+    try {
+       const cookies = req.cookies;
+       const {token} = cookies;
+
+   if (!token) {
+       return res.status(401).send('Invalid token ');
+   }
+
+   const decodedMessage = await jwt.verify(token, 'DEVELOPMENT$123');
+   console.log(decodedMessage);
+
+   const _id = decodedMessage.userId;
+
+   const user = await User.findById(_id);
+
+   if (!user) {
+       return res.status(404).send('User not found');
+   }
+   res.send(user);
+} catch (error) {
+   console.error("Error fetching user profile:", error);
+   res.status(500).send('Internal Server Error');
+}
 });
 
 app.get('/feed', async (req, res) => {
