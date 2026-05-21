@@ -6,6 +6,7 @@ const { validateSignUpData } = require('./utils/validator');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const { userAuth } = require('./middlewares/auth');
 
 app.use(express.json());
 app.use(cookieParser());
@@ -39,8 +40,10 @@ app.post('/login', async (req, res) => {
         if (!isMatch) {
             return res.status(401).send('Invalid Credentials');
         }
-        const token = jwt.sign({ userId: user._id }, 'DEVELOPMENT$123');
-        res.cookie('token', token);
+        const token = jwt.sign({ userId: user._id }, 'DEVELOPMENT$123',{
+            expiresIn: '7d'
+        });
+        res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
         res.send('Login successful');
     } catch (error) {
         res.status(500).send(error.message);
@@ -49,7 +52,7 @@ app.post('/login', async (req, res) => {
 
 // get data of one user 
 
-app.get('/user', async (req, res) => {
+app.get('/user', userAuth, async (req, res) => {
     const email = req.body.email;
     try{
         const user = await User.find({ email });
@@ -63,34 +66,21 @@ app.get('/user', async (req, res) => {
     }
 });
 
-app.get('/profile' , async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
 
     try {
-       const cookies = req.cookies;
-       const {token} = cookies;
-
-   if (!token) {
-       return res.status(401).send('Invalid token ');
-   }
-
-   const decodedMessage = await jwt.verify(token, 'DEVELOPMENT$123');
-   console.log(decodedMessage);
-
-   const _id = decodedMessage.userId;
-
-   const user = await User.findById(_id);
-
-   if (!user) {
-       return res.status(404).send('User not found');
-   }
-   res.send(user);
-} catch (error) {
-   console.error("Error fetching user profile:", error);
-   res.status(500).send('Internal Server Error');
-}
+       const user = req.user;
+       if (!user) {
+           return res.status(404).send('User not found');
+       }
+       res.send(user);
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-app.get('/feed', async (req, res) => {
+app.get('/feed', userAuth, async (req, res) => {
     try {
         const feed = await User.find({});
         res.send(feed);
@@ -100,7 +90,8 @@ app.get('/feed', async (req, res) => {
     }
 });
 
-app.delete('/user', async (req, res) => {
+
+app.delete('/user', userAuth, async (req, res) => {
     const userId = req.body.userId;
     try {
         await User.findOneAndDelete({ _id: userId });
@@ -111,7 +102,7 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-app.patch('/user/:userId', async (req, res) => {
+app.patch('/user/:userId', userAuth, async (req, res) => {
     const userId = req.params?.userId;
     const updates = req.body;
     try {
