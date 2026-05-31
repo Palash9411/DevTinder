@@ -13,6 +13,31 @@ const validateSignUpData = (req ) =>{
     }
 }
 
+
+const validateProfileEditData = (req) => {
+
+    const { email, photoUrl, skills } = req.body;
+    const allowedFields = ['firstName', 'lastName', 'email', 'gender', 'age', 'photoUrl', 'skills', 'about'];
+
+    const isAllowed = Object.keys(req.body).every(field => allowedFields.includes(field));
+    if (!isAllowed) {
+        throw new Error(`Invalid Edit fields`);
+    }
+
+    if (email && !validators.isEmail(email)) {
+        throw new Error('Invalid email format');
+    }
+    if (photoUrl && !validators.isURL(photoUrl)) {
+        throw new Error('Invalid photo URL format');
+    }
+    if (skills && (!Array.isArray(skills) || skills.length === 0)) {
+        throw new Error('Skills must be a non-empty array');
+    }
+
+    return isAllowed;
+}
+
 module.exports = {
-    validateSignUpData
+    validateSignUpData,
+    validateProfileEditData
 };
