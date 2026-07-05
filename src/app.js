@@ -12,9 +12,11 @@ const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const requestRoutes = require('./routes/request');
 
+
 app.use('/', authRoutes);
 app.use('/', profileRoutes);
 app.use("/", requestRoutes);
+app.use("/", userRoutes);
 
 connectDB().then(() => {
     console.log("Database connection established ");

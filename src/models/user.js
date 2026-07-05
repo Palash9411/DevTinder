@@ -41,13 +41,17 @@ const userSchema = new Schema({
     },
     gender: {
         type: String,
-        validate (value) {
-            const genders = ['male', 'female', 'other'];
-            if(!genders.includes(value)) {
-                throw new Error('Invalid gender');
-            }
-            return true;
-        }
+        enum : {
+            values : ['male', 'female', 'other'],
+            message : `{VALUE} is not a valid gender`
+        },
+        // validate (value) {
+        //     const genders = ['male', 'female', 'other'];
+        //     if(!genders.includes(value)) {
+        //         throw new Error('Invalid gender');
+        //     }
+        //     return true;
+        // }
 
     },
     photoUrl : {
