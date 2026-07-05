@@ -2,7 +2,7 @@ const express = require ('express');
 const connectDB = require('./configs/database');
 const app = express();
 const cookieParser = require('cookie-parser');
-
+const userRoutes = require('./routes/user');
 
 app.use(express.json());
 app.use(cookieParser());
