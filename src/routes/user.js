@@ -3,6 +3,7 @@ const { userAuth } = require('../middlewares/auth');
 const userRouter = express.Router();
 const connectionRequest = require('../models/connectionRequest');
 const User = require('../models/user');
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 
 //get all the connection request for the user 
 userRouter.get('/user/requests/recieved',userAuth,async(req,res)=>{
@@ -19,6 +20,32 @@ userRouter.get('/user/requests/recieved',userAuth,async(req,res)=>{
 })
 
 
+userRouter.get("/user/connections", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const connectionRequests = await ConnectionRequest.find({
+      $or: [
+        { toUserId: loggedInUser._id, status: "accepted" },
+        { fromUserId: loggedInUser._id, status: "accepted" },
+      ],
+    })
+      .populate("fromUserId", USER_SAFE_DATA)
+      .populate("toUserId", USER_SAFE_DATA);
+
+    const data = connectionRequests.map((row) => {
+      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
+        return row.toUserId;
+      }
+      return row.fromUserId;
+    });
+
+    res.json({ data });
+  } catch (err) {
+    res.status(400).send({ message: err.message });
+  }
+});
+
 userRouter.get('/feed',userAuth,async(req,res)=>{
     try {
         const loggedInUser = req.user; 
@@ -27,7 +54,7 @@ userRouter.get('/feed',userAuth,async(req,res)=>{
         pageSize = pageSize > 50 ? 50 : pageSize;
         const findConnections = await connectionRequest.find({
             $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }]
-        }).select('fromUserId toUserId');
+        }).select( USER_SAFE_DATA);
 
         const hiddenUserSet = new Set([]);
 
@@ -41,7 +68,7 @@ userRouter.get('/feed',userAuth,async(req,res)=>{
                 { _id: { $nin: Array.from(hiddenUserSet) } },
                 { _id: { $ne: loggedInUser._id } }
             ]
-        }).select('firstName lastName age gender').skip((pageNumber - 1) * pageSize).limit(pageSize);
+        }).select(USER_SAFE_DATA).skip((pageNumber - 1) * pageSize).limit(pageSize);
 
         res.send({ userList });
 
