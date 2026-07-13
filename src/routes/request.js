@@ -5,12 +5,14 @@ const requestRouter = express.Router();
 const User = require('../models/user');
 const ConnectionRequestModel = require('../models/connectionRequest');
 
+
+
 requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) => {
     try {
-        const fromUserId = req.user.objectId;
+        const fromUserId = req.user._id;
         const toUserId = req.params.userId;
         const status = req.params.status;
-
+        
         const allowedStatuses = ['ignored', 'interested'];
 
         if (!allowedStatuses.includes(status)) {
@@ -44,13 +46,17 @@ requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) =
             data,
         });
 
-    } catch (error) {
-        return res.status(400).send({ message: error.message });
-    }
+    }catch (error) {
+    console.error(error);
+    return res.status(400).json({
+        message: error.message,
+        stack: error.stack,
+    });
+}
 });
 
 
-requestRouter.post('request/review/:status/:requestId', userAuth, async (req, res) => {
+requestRouter.post('/request/review/:status/:requestId', userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user;
         const { status, requestId } = req.params;
@@ -61,7 +67,7 @@ requestRouter.post('request/review/:status/:requestId', userAuth, async (req, re
             return res.status(400).send('Invalid status' + status);
         }
 
-        const connectionRequest = await ConnectionRequest.findOne({
+        const connectionRequest = await ConnectionRequestModel.findOne({
             _id: requestId,
             toUserId: loggedInUser._id,
             status: "interested",

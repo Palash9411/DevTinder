@@ -21,14 +21,11 @@ const connectionRequestSchema = new mongoose.Schema({
     timestamps: true
 }
 );
-connectionRequestSchema.pre('save', function (next) {
-    const connectionRequest = this ;
-    if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
-        throw new Error('Cannot send connection request to yourself ');
+connectionRequestSchema.pre('save', async function () {
+    if (this.fromUserId.equals(this.toUserId)) {
+        throw new Error('Cannot send connection request to yourself');
     }
-    next();
 });
-
 const ConnectionRequestModel = mongoose.model('ConnectionRequest', connectionRequestSchema);
 module.exports = ConnectionRequestModel;
 

@@ -20,6 +20,7 @@ const userAuth = async (req,res,next)=>{
             return res.status(404).send('User not found');
         }
         req.user = user;
+        console.log("userAuth middleware executed successfully for user:", user.email);
         next();
   } catch (error) {
       console.error("Error in userAuth middleware:", error);

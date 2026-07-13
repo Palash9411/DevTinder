@@ -3,6 +3,7 @@ const profileRouter = express.Router();
 const { userAuth } = require('../middlewares/auth');
 const User = require('../models/user');
 const { validateProfileEditData } = require('../utils/validator');
+const bcrypt = require('bcrypt');
 
 profileRouter.get('/profile', userAuth, async (req, res) => {
     try {
@@ -39,22 +40,22 @@ profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
     }
 });
 
-profileRouter.patch('/profile/password', userAuth, async (req, res) => {
+profileRouter.patch('/profile/password', async (req, res) => {
     try {
         const { email , newPassword } = req.body;
-        const loggedInUser = req.user;
-
         if (!email || !newPassword) {
             return res.status(400).json({ error: 'Email and new password are required' });
         }
+        const normalizedEmail = email.trim().toLowerCase();
+        const forgetUser = await User.findOne({ email: normalizedEmail });
 
-       const isMatch = email === loggedInUser.email;
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Email is incorrect' });
+        if(!forgetUser) {
+            return res.status(404).json({ error: 'User not found' });
         }
 
-        loggedInUser.password =  await bcrypt.hash(newPassword, 10);
-        await loggedInUser.save();
+        forgetUser.password =  await bcrypt.hash(newPassword, 10);
+        await forgetUser.save();
+        res.json({ message: 'Password updated successfully' });
 
     } catch (error) {
         console.error("Error updating password:", error);
