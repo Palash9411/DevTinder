@@ -22,7 +22,9 @@ userRouter.get('/user/requests/recieved',userAuth,async(req,res)=>{
 userRouter.get('/feed',userAuth,async(req,res)=>{
     try {
         const loggedInUser = req.user; 
-
+        const pageNumber = parseInt(req.query.page) || 1;
+        let pageSize = parseInt(req.query.size) || 10;
+        pageSize = pageSize > 50 ? 50 : pageSize;
         const findConnections = await connectionRequest.find({
             $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }]
         }).select('fromUserId toUserId');
@@ -39,7 +41,7 @@ userRouter.get('/feed',userAuth,async(req,res)=>{
                 { _id: { $nin: Array.from(hiddenUserSet) } },
                 { _id: { $ne: loggedInUser._id } }
             ]
-        }).select('firstName lastName age gender');
+        }).select('firstName lastName age gender').skip((pageNumber - 1) * pageSize).limit(pageSize);
 
         res.send({ userList });
 
