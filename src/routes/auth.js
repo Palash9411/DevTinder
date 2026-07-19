@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
+const USER_SAFE_FIELDS = ['_id', 'firstName', 'lastName', 'email'];
+
 authRouter.post('/signup', async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
@@ -38,7 +40,7 @@ authRouter.post('/login', async (req, res) => {
             expiresIn: '7d'
         });
         res.cookie('token', token, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
-        res.send('Login successful');
+        res.send(user);
     } catch (error) {
         res.status(500).send(error.message);
     }
