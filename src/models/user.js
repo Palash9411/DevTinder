@@ -41,6 +41,7 @@ const userSchema = new Schema({
     },
     gender: {
         type: String,
+        lowercase:true,
         enum : {
             values : ['male', 'female', 'other'],
             message : `{VALUE} is not a valid gender`
@@ -56,7 +57,7 @@ const userSchema = new Schema({
     },
     photoUrl : {
         type: String,
-        default: 'https://ashallendesign.co.uk/blog/13-placeholder-avatar-and-image-websites',
+        default: 'https://img1.hscicdn.com/image/upload/f_auto,t_ds_w_1280,q_80/lsci/db/PICTURES/CMS/417600/417679.jpg',
         validate(value) {
             if (!validator.isURL(value)) {
                 throw new Error('Invalid URL format');
